@@ -48,6 +48,10 @@ namespace SummerSchoolMVC.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "StudentID,FirstName,LastName,EnrollmentFee")] Student student)
         {
+
+            student.EnrollmentFee = 200;
+            
+
             if (ModelState.IsValid)
             {
                 db.Students.Add(student);
@@ -56,6 +60,30 @@ namespace SummerSchoolMVC.Controllers
             }
 
             return View(student);
+        }
+
+        int CalculateEnrollmentCost(string firstName, string lastName)
+        {
+            //"John Jacob Jingle Schmidt"
+            //"Larry Potter"
+            //"Bob"
+
+            double cost = 200;
+
+            // POTter, Potter, potter, POTTER
+            if (lastName.ToLower() == "potter")
+            {
+                cost *= 0.5;
+            }
+            if (lastName.ToLower() == "longbottom" && db.Students.Count() <= 10)
+            {
+                cost = 0;
+            }
+            if (firstName.ToLower()[0] == lastName.ToLower()[0])
+            {
+                cost = 0.9 * cost;
+            }
+            return (int)cost;
         }
 
         // GET: Students/Edit/5
@@ -80,9 +108,10 @@ namespace SummerSchoolMVC.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "StudentID,FirstName,LastName,EnrollmentFee")] Student student)
         {
+            student.EnrollmentFee = CalculateEnrollmentCost(student.FirstName, student.LastName);
             if (ModelState.IsValid)
             {
-                db.Entry(student).State = EntityState.Modified;
+                db.Students.Add(student);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
